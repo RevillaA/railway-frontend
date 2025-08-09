@@ -1,0 +1,4 @@
+.page-content { margin-top: 8rem; } /* separa del header fijo */
+.table td, .table th { vertical-align: middle; }
+.btn-group .btn + .btn { margin-left: .25rem; }
+.modal .form-label { font-weight: 600; }

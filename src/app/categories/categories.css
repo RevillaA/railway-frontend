@@ -1,0 +1,17 @@
+.page-content { margin-top: 8rem; }
+.table td, .table th { vertical-align: middle; }
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.col-id { width: 6rem; white-space: nowrap; }
+.col-date { width: 12rem; white-space: nowrap; }
+.col-actions { width: 11rem; white-space: nowrap; }
+@media (max-width: 576px) {
+  .col-id, .col-desc, .col-date { display: none; }
+}
+.modal .form-label { font-weight: 600; }
+.btn-group .btn + .btn { margin-left: .25rem; }
+.is-invalid { border-color: #dc3545 !important; }

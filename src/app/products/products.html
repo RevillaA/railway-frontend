@@ -1,0 +1,146 @@
+<div class="container page-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0">Productos</h2>
+    <button class="btn btn-success" (click)="openNew()">+ Nuevo Producto</button>
+  </div>
+
+  <div class="text-muted mb-2" [innerHTML]="statusMsg"></div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle" *ngIf="products.length > 0; else sinProductos">
+      <thead class="table-dark">
+        <tr>
+          <th style="width:6rem;">ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th style="width:10rem;">Precio</th>
+          <th style="width:12rem;">Categoría</th>
+          <th class="text-center" style="width:11rem;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products; trackBy: trackById">
+          <td>{{ p.id }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.description }}</td>
+          <td>{{ p.price | currency:'USD':'symbol':'1.2-2' }}</td>
+          <td>{{ getCategoryName(p.categoryId) }}</td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-primary" (click)="openEdit(p)">Editar</button>
+              <button type="button" class="btn btn-outline-danger" (click)="delete(p.id)">Eliminar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #sinProductos>
+    <div class="alert alert-light border text-muted">No hay productos registrados.</div>
+  </ng-template>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" tabindex="-1" #productModal>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ editingId ? 'Editar producto' : 'Nuevo producto' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="save()" novalidate>
+        <div class="modal-body">
+
+          <!-- Nombre -->
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input class="form-control"
+                   formControlName="name"
+                   [class.is-invalid]="hasError('name','required') || hasError('name','minlength') || hasError('name','maxlength') || hasError('name','pattern')"
+                   placeholder="Ej. Zapatos deportivos"
+                   maxlength="60"
+                   pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,60}$"
+                   title="3–60: letras, números y espacios" />
+            <div class="invalid-feedback" *ngIf="hasError('name','required')">
+              Campo obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('name','minlength') || hasError('name','maxlength')">
+              Debe tener entre 3 y 60 caracteres.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('name','pattern')">
+              Solo letras, números y espacios.
+            </div>
+          </div>
+
+          <!-- Precio y categoría -->
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Precio</label>
+              <input class="form-control"
+                     formControlName="price"
+                     type="number"
+                     min="0.1"
+                     step="0.01"
+                     placeholder="0.00"
+                     [class.is-invalid]="hasError('price','required') || hasError('price','min')" />
+              <div class="invalid-feedback" *ngIf="hasError('price','required')">
+                Campo obligatorio.
+              </div>
+              <div class="invalid-feedback" *ngIf="hasError('price','min')">
+                Debe ser un valor positivo mayor a 0.1.
+              </div>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Categoría</label>
+              <select class="form-select"
+                      formControlName="categoryId"
+                      [class.is-invalid]="hasError('categoryId','required') || hasError('categoryId','categoryInvalid')">
+                <option value="" disabled>Selecciona una categoría</option>
+                <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="hasError('categoryId','required')">
+                Selecciona una categoría.
+              </div>
+              <div class="invalid-feedback" *ngIf="hasError('categoryId','categoryInvalid')">
+                Debes seleccionar una categoría válida.
+              </div>
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div class="mt-2">
+            <label class="form-label">Descripción</label>
+            <input class="form-control"
+                   formControlName="description"
+                   [class.is-invalid]="hasError('description','required') || hasError('description','minlength') || hasError('description','maxlength') || hasError('description','pattern')"
+                   placeholder="Entre 3 y 100 caracteres"
+                   maxlength="100"
+                   pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,100}$"
+                   title="3–100: letras, números y espacios" />
+            <div class="invalid-feedback" *ngIf="hasError('description','required')">
+              Campo obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('description','minlength') || hasError('description','maxlength')">
+              Debe tener entre 3 y 100 caracteres.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('description','pattern')">
+              Solo letras, números y espacios.
+            </div>
+          </div>
+
+          <div class="small mt-2" [innerHTML]="saveMsg"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
+            {{ editingId ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+.navbar-brand,
+.nav-link {
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  font-weight: 500;
+}
+
+.pastel-navbar {
+  background-color: #a7d2cb;
+  padding: 1rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.nav-link {
+  color: #2e2e2e !important;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #2c698d !important;
+  border-bottom: 2px solid #2c698d;
+}
+
+  .logo-circle {
+    position: absolute;
+    left: 50%;
+    bottom: -70px; 
+    transform: translateX(-50%);
+    background-color: #75e6da;
+    border: 5px solid #05445e;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+    .pastel-navbar {
+    background-color: #a7d2cb;
+    padding: 1rem 2rem;
+    position: fixed;    /* 🔹 fija la navbar */
+    top: 0;             /* 🔹 pegada arriba */
+    left: 0;
+    width: 100%;        /* 🔹 ancho total */
+    z-index: 1000;      /* 🔹 encima del resto */
+    border-radius: 0;
+    }
+
+  .logo-circle .navbar-brand {
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+  }
+
+@media (max-width: 768px) {
+  .logo-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 1rem;
+    top: -20px;
+  }
+
+  .logo-circle .navbar-brand {
+    font-size: 1rem;
+  }
+
+  .pastel-navbar {
+    background-color: #a7d2cb;
+    padding: 1rem 2rem 4.5rem;
+    position: relative;
+    z-index: 1;
+  }
+}

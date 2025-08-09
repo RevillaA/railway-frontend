@@ -1,0 +1,118 @@
+<div class="container page-content">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h2 class="m-0">Categorías</h2>
+    <button class="btn btn-success" (click)="openNew()">+ Nueva Categoría</button>
+  </div>
+
+  <div class="text-muted mb-2" [innerHTML]="statusMsg"></div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle table-sm"
+           *ngIf="categories.length > 0; else sinCategorias">
+      <thead class="table-dark">
+        <tr>
+          <th class="col-id">ID</th>
+          <th>Nombre</th>
+          <th class="col-desc">Descripción</th>
+          <th class="col-date">Creada</th>
+          <th class="col-date">Actualizada</th>
+          <th class="text-center col-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of categories; trackBy: trackById">
+          <td class="col-id">{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td class="col-desc text-truncate-2">{{ c.description || '' }}</td>
+          <td class="col-date">{{ c.createdAt | date:'dd MMM yyyy':'America/Guayaquil' }}</td>
+          <td class="col-date">{{ c.updatedAt | date:'dd MMM yyyy':'America/Guayaquil' }}</td>
+          <td class="text-center col-actions">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-primary" (click)="openEdit(c)">Editar</button>
+              <button type="button" class="btn btn-outline-danger" (click)="delete(c.id)">Eliminar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #sinCategorias>
+    <div class="alert alert-light border text-muted m-0">
+      No hay categorías registradas.
+    </div>
+  </ng-template>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" tabindex="-1" #categoryModal>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">{{ editingId ? 'Editar categoría' : 'Nueva categoría' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form [formGroup]="categoryForm" (ngSubmit)="save()" novalidate>
+        <div class="modal-body">
+
+          <!-- Nombre -->
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input class="form-control"
+                   formControlName="name"
+                   [class.is-invalid]="hasError('name','required') || hasError('name','minlength') || hasError('name','maxlength') || hasError('name','pattern')"
+                   placeholder="Ej. Ropa deportiva"
+                   inputmode="text"
+                   autocomplete="off"
+                   maxlength="60"
+                   pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,60}$"
+                   title="3–60: letras, números y espacios" />
+            <div class="invalid-feedback" *ngIf="hasError('name','required')">
+              Campo obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('name','minlength') || hasError('name','maxlength')">
+              Debe tener entre 3 y 60 caracteres.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('name','pattern')">
+              Solo letras, números y espacios.
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div class="mb-2">
+            <label class="form-label">Descripción</label>
+            <input class="form-control"
+                   formControlName="description"
+                   [class.is-invalid]="hasError('description','required') || hasError('description','minlength') || hasError('description','maxlength') || hasError('description','pattern')"
+                   placeholder="Entre 3 y 100 caracteres"
+                   inputmode="text"
+                   maxlength="100"
+                   pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,100}$"
+                   title="3–100: letras, números y espacios" />
+            <div class="invalid-feedback" *ngIf="hasError('description','required')">
+              Campo obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('description','minlength') || hasError('description','maxlength')">
+              Debe tener entre 3 y 100 caracteres.
+            </div>
+            <div class="invalid-feedback" *ngIf="hasError('description','pattern')">
+              Solo letras, números y espacios.
+            </div>
+          </div>
+
+          <div class="small mt-2" [innerHTML]="saveMsg"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid">
+            {{ editingId ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
