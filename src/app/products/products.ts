@@ -16,9 +16,15 @@ declare const bootstrap: any; // usa el JS global de Bootstrap
 export class ProductsComponent implements OnInit {
   @ViewChild('productModal') productModalRef!: ElementRef;
   private productModal!: any;
-
+  Math = Math;
   productForm: FormGroup;
+  private allProducts: Product[] = [];
   products: Product[] = [];
+  page = 1;
+  pageSize = 10;
+  total = 0;
+  totalPages = 1;
+
   categories: Category[] = [];
   statusMsg = '';
   saveMsg = '';
@@ -75,7 +81,15 @@ export class ProductsComponent implements OnInit {
   loadProducts() {
     this.statusMsg = 'Cargando...';
     this.api.getProducts().subscribe({
-      next: (list) => { this.products = Array.isArray(list) ? list : []; this.statusMsg = '<span class="ok">OK</span>'; },
+      next: (list) => {
+        const data = Array.isArray(list) ? list : [];
+        // ▼▼ NUEVO: configurar fuente y paginar ▼▼
+        this.allProducts = data;
+        this.total = data.length;
+        this.totalPages = Math.max(1, Math.ceil(this.total / this.pageSize));
+        this.applyPage();
+        this.statusMsg = '<span class="ok">OK</span>';
+      },
       error: (e) => { this.statusMsg = `<span class="err">Error: ${e.message}</span>`; }
     });
   }
@@ -172,5 +186,20 @@ export class ProductsComponent implements OnInit {
   hasError(ctrl: string, error: string) {
     const c = this.productForm.get(ctrl);
     return !!c && c.hasError(error) && (c.dirty || c.touched || this.submitted);
+  }
+
+  // ▼▼ PAGINACIÓN (solo front) ▼▼
+  setPage(p: number) {
+    if (p < 1 || p > this.totalPages) return;
+    this.page = p;
+    this.applyPage();
+  }
+  prevPage() { this.setPage(this.page - 1); }
+  nextPage() { this.setPage(this.page + 1); }
+
+  private applyPage() {
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.products = this.allProducts.slice(start, end);
   }
 }

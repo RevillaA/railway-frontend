@@ -4,7 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService, Category } from '../api.service';
 
-declare const bootstrap: any; // Bootstrap JS global
+declare const bootstrap: any;
 
 @Component({
   selector: 'app-categories',
@@ -18,7 +18,14 @@ export class CategoriesComponent implements OnInit {
   private categoryModal!: any;
 
   categoryForm: FormGroup;
+
+  private allCategories: Category[] = [];
   categories: Category[] = [];
+  page = 1;
+  pageSize = 10;
+  total = 0;
+  totalPages = 1;
+
   statusMsg = '';
   saveMsg = '';
   submitted = false;
@@ -27,23 +34,12 @@ export class CategoriesComponent implements OnInit {
   categoriesUrl = 'https://categories-api-production.up.railway.app/api/categories';
 
   constructor(private fb: FormBuilder, private api: ApiService) {
-    // Permite letras (con acentos y Ñ/ñ), números y espacios. SIN guiones.
     const NAME_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,60}$/;
     const DESC_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,100}$/;
 
     this.categoryForm = this.fb.group({
-      name: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(60),
-        Validators.pattern(NAME_REGEX)
-      ]],
-      description: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(100),
-        Validators.pattern(DESC_REGEX)
-      ]]
+      name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(60), Validators.pattern(NAME_REGEX)]],
+      description: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), Validators.pattern(DESC_REGEX)]]
     });
   }
 
@@ -55,23 +51,23 @@ export class CategoriesComponent implements OnInit {
     this.categoryModal = new bootstrap.Modal(this.categoryModalRef.nativeElement, { backdrop: 'static' });
   }
 
-  // Helpers UI: muestra errores solo al tocar o al intentar guardar
   hasError(ctrl: string, error: string) {
     const c = this.categoryForm.get(ctrl);
     return !!c && c.hasError(error) && (c.dirty || c.touched || this.submitted);
   }
 
-  // CRUD
   loadCategories() {
     this.statusMsg = 'Cargando...';
     this.api.getCategories().subscribe({
       next: (list) => {
-        this.categories = Array.isArray(list) ? list : [];
+        const data = Array.isArray(list) ? list : [];
+        this.allCategories = data;
+        this.total = data.length;
+        this.totalPages = Math.max(1, Math.ceil(this.total / this.pageSize));
+        this.applyPage();
         this.statusMsg = '<span class="ok">OK</span>';
       },
-      error: (e) => {
-        this.statusMsg = `<span class="err">Error: ${e.message}</span>`;
-      }
+      error: (e) => { this.statusMsg = `<span class="err">Error: ${e.message}</span>`; }
     });
   }
 
@@ -87,10 +83,7 @@ export class CategoriesComponent implements OnInit {
     this.editingId = c.id ?? null;
     this.saveMsg = '';
     this.submitted = false;
-    this.categoryForm.reset({
-      name: c.name,
-      description: c.description ?? ''
-    });
+    this.categoryForm.reset({ name: c.name, description: c.description ?? '' });
     this.categoryModal.show();
   }
 
@@ -100,8 +93,6 @@ export class CategoriesComponent implements OnInit {
       this.categoryForm.markAllAsTouched();
       return;
     }
-
-    // Normaliza espacios múltiples
     const v = this.categoryForm.value;
     const payload: Category = {
       name: String(v.name ?? '').trim().replace(/\s+/g, ' '),
@@ -111,21 +102,13 @@ export class CategoriesComponent implements OnInit {
     if (this.editingId) {
       this.saveMsg = 'Actualizando...';
       this.api.updateCategory(this.editingId, payload).subscribe({
-        next: () => {
-          this.saveMsg = '<span class="ok">Actualizada ✔</span>';
-          this.categoryModal.hide();
-          this.loadCategories();
-        },
+        next: () => { this.saveMsg = '<span class="ok">Actualizada ✔</span>'; this.categoryModal.hide(); this.loadCategories(); },
         error: (e) => this.saveMsg = `<span class="err">Error: ${e.message}</span>`
       });
     } else {
       this.saveMsg = 'Creando...';
       this.api.createCategory(payload).subscribe({
-        next: () => {
-          this.saveMsg = '<span class="ok">Creada ✔</span>';
-          this.categoryModal.hide();
-          this.loadCategories();
-        },
+        next: () => { this.saveMsg = '<span class="ok">Creada ✔</span>'; this.categoryModal.hide(); this.loadCategories(); },
         error: (e) => this.saveMsg = `<span class="err">Error: ${e.message}</span>`
       });
     }
@@ -141,4 +124,18 @@ export class CategoriesComponent implements OnInit {
   }
 
   trackById = (_: number, it: any) => it?.id ?? it;
+
+  setPage(p: number) {
+    if (p < 1 || p > this.totalPages) return;
+    this.page = p;
+    this.applyPage();
+  }
+  prevPage() { this.setPage(this.page - 1); }
+  nextPage() { this.setPage(this.page + 1); }
+
+  private applyPage() {
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.categories = this.allCategories.slice(start, end);
+  }
 }

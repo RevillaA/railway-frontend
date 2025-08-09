@@ -35,6 +35,30 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="d-flex align-items-center justify-content-between mt-2" *ngIf="total > 0">
+      <div class="text-muted small">
+        Mostrando
+        {{ ((page-1)*pageSize)+1 }}
+        –
+        {{ (page*pageSize) < total ? (page*pageSize) : total }}
+        de {{ total }}
+      </div>
+
+      <nav aria-label="Paginación">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="page === 1">
+            <button class="page-link" (click)="prevPage()" [disabled]="page === 1">Anterior</button>
+          </li>
+          <li class="page-item disabled">
+            <span class="page-link">{{ page }} / {{ totalPages }}</span>
+          </li>
+          <li class="page-item" [class.disabled]="page === totalPages">
+            <button class="page-link" (click)="nextPage()" [disabled]="page === totalPages">Siguiente</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
   </div>
 
   <ng-template #sinCategorias>
@@ -44,7 +68,6 @@
   </ng-template>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal fade" tabindex="-1" #categoryModal>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">

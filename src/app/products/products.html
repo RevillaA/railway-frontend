@@ -36,12 +36,35 @@
     </table>
   </div>
 
+  <div class="d-flex align-items-center justify-content-between mt-2" *ngIf="total > 0">
+    <div class="text-muted small">
+      Mostrando
+      {{ ((page-1)*pageSize)+1 }}
+      –
+      {{ Math.min(page*pageSize, total) }}
+      de {{ total }}
+    </div>
+
+    <nav aria-label="Paginación">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="page === 1">
+          <button class="page-link" (click)="prevPage()" [disabled]="page === 1">Anterior</button>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">{{ page }} / {{ totalPages }}</span>
+        </li>
+        <li class="page-item" [class.disabled]="page === totalPages">
+          <button class="page-link" (click)="nextPage()" [disabled]="page === totalPages">Siguiente</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
   <ng-template #sinProductos>
     <div class="alert alert-light border text-muted">No hay productos registrados.</div>
   </ng-template>
 </div>
 
-<!-- Modal -->
 <div class="modal fade" tabindex="-1" #productModal>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -52,8 +75,6 @@
 
       <form [formGroup]="productForm" (ngSubmit)="save()" novalidate>
         <div class="modal-body">
-
-          <!-- Nombre -->
           <div class="mb-2">
             <label class="form-label">Nombre</label>
             <input class="form-control"
@@ -63,18 +84,11 @@
                    maxlength="60"
                    pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,60}$"
                    title="3–60: letras, números y espacios" />
-            <div class="invalid-feedback" *ngIf="hasError('name','required')">
-              Campo obligatorio.
-            </div>
-            <div class="invalid-feedback" *ngIf="hasError('name','minlength') || hasError('name','maxlength')">
-              Debe tener entre 3 y 60 caracteres.
-            </div>
-            <div class="invalid-feedback" *ngIf="hasError('name','pattern')">
-              Solo letras, números y espacios.
-            </div>
+            <div class="invalid-feedback" *ngIf="hasError('name','required')">Campo obligatorio.</div>
+            <div class="invalid-feedback" *ngIf="hasError('name','minlength') || hasError('name','maxlength')">Debe tener entre 3 y 60 caracteres.</div>
+            <div class="invalid-feedback" *ngIf="hasError('name','pattern')">Solo letras, números y espacios.</div>
           </div>
 
-          <!-- Precio y categoría -->
           <div class="row g-2">
             <div class="col-6">
               <label class="form-label">Precio</label>
@@ -85,12 +99,8 @@
                      step="0.01"
                      placeholder="0.00"
                      [class.is-invalid]="hasError('price','required') || hasError('price','min')" />
-              <div class="invalid-feedback" *ngIf="hasError('price','required')">
-                Campo obligatorio.
-              </div>
-              <div class="invalid-feedback" *ngIf="hasError('price','min')">
-                Debe ser un valor positivo mayor a 0.1.
-              </div>
+              <div class="invalid-feedback" *ngIf="hasError('price','required')">Campo obligatorio.</div>
+              <div class="invalid-feedback" *ngIf="hasError('price','min')">Debe ser un valor positivo mayor a 0.1.</div>
             </div>
 
             <div class="col-6">
@@ -101,16 +111,11 @@
                 <option value="" disabled>Selecciona una categoría</option>
                 <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
               </select>
-              <div class="invalid-feedback" *ngIf="hasError('categoryId','required')">
-                Selecciona una categoría.
-              </div>
-              <div class="invalid-feedback" *ngIf="hasError('categoryId','categoryInvalid')">
-                Debes seleccionar una categoría válida.
-              </div>
+              <div class="invalid-feedback" *ngIf="hasError('categoryId','required')">Selecciona una categoría.</div>
+              <div class="invalid-feedback" *ngIf="hasError('categoryId','categoryInvalid')">Debes seleccionar una categoría válida.</div>
             </div>
           </div>
 
-          <!-- Descripción -->
           <div class="mt-2">
             <label class="form-label">Descripción</label>
             <input class="form-control"
@@ -120,15 +125,9 @@
                    maxlength="100"
                    pattern="^[A-Za-z0-9ÁÉÍÓÚÜáéíóúüÑñ ]{3,100}$"
                    title="3–100: letras, números y espacios" />
-            <div class="invalid-feedback" *ngIf="hasError('description','required')">
-              Campo obligatorio.
-            </div>
-            <div class="invalid-feedback" *ngIf="hasError('description','minlength') || hasError('description','maxlength')">
-              Debe tener entre 3 y 100 caracteres.
-            </div>
-            <div class="invalid-feedback" *ngIf="hasError('description','pattern')">
-              Solo letras, números y espacios.
-            </div>
+            <div class="invalid-feedback" *ngIf="hasError('description','required')">Campo obligatorio.</div>
+            <div class="invalid-feedback" *ngIf="hasError('description','minlength') || hasError('description','maxlength')">Debe tener entre 3 y 100 caracteres.</div>
+            <div class="invalid-feedback" *ngIf="hasError('description','pattern')">Solo letras, números y espacios.</div>
           </div>
 
           <div class="small mt-2" [innerHTML]="saveMsg"></div>
