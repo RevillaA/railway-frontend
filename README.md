@@ -1,59 +1,100 @@
-# RailwayFrontend
+# Railway Frontend – Despliegue en AWS
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.1.
+Este repositorio contiene el **frontend en Angular** del sistema.  
+El proyecto está configurado para ser empaquetado y servido con **Nginx** dentro de un contenedor Docker.
 
-## Development server
+⚠ **Nota importante:**  
+Las APIs de este sistema **no están en este repositorio**. Se encuentran en el repositorio:  
+[https://github.com/RevillaA/Proyecto-Apis](https://github.com/RevillaA/Proyecto-Apis)  
 
-To start a local development server, run:
+En dicho repositorio:  
+- Carpeta `products` → API de productos  
+- Carpeta `categories` → API de categorías  
 
-```bash
-ng serve
-```
+**Motivo de la separación de repositorios:**  
+Las APIs están en un repositorio independiente porque aunque estas se despliegan en un mismo proyecto de railway si se las separa del repositorio del front estas se pueden gestionar de mejor manera.
+Esto permite:  
+1. **Despliegues independientes:** Actualizar el backend sin tener que reconstruir el frontend, y viceversa.  
+2. **Escalabilidad:** Hospedar las APIs en servidores o servicios diferentes optimizados para backend (Railway, AWS, etc.).  
+3. **Mantenimiento y control de versiones:** Facilita la organización del código y la gestión de ramas por cada servicio.  
+4. **Seguridad:** Mantener separadas las configuraciones y credenciales sensibles del backend.  
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+APIs desplegadas actualmente:  
+- **Products API:** https://products-api-production-9ae2.up.railway.app/api/products  
+- **Categories API:** https://categories-api-production.up.railway.app/api/categories  
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 1. Prerrequisitos en el servidor AWS
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+En tu instancia de AWS (por ejemplo, EC2 con Ubuntu 22.04), asegúrate de tener instalado:
 
 ```bash
-ng test
+sudo apt update && sudo apt upgrade -y
+sudo apt install docker.io docker-compose -y
+sudo systemctl enable docker
+sudo systemctl start docker
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## 2. Clonar el repositorio
 
 ```bash
-ng e2e
+git clone https://github.com/RevillaA/railway-frontend.git
+cd railway-frontend
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+## 3. Crear el archivo `docker-compose.yml`
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+En la raíz del proyecto, crea el archivo `docker-compose.yml` con este contenido:
+
+```yaml
+version: "3.8"
+services:
+  frontend:
+    build: .
+    container_name: angular_frontend
+    ports:
+      - "80:80"
+    restart: always
+```
+
+---
+
+## 4. Construir y levantar el contenedor
+
+```bash
+sudo docker compose up -d --build
+```
+
+Esto:
+- Construirá la imagen usando el `Dockerfile` incluido en el repositorio.
+- Servirá el frontend en el puerto **80** para acceso público.
+
+---
+
+## 5. Configurar el firewall y acceso público
+
+En AWS:
+1. En el **Security Group** de tu instancia EC2, habilita el puerto **80 (HTTP)** para acceso público.
+2. Abre tu navegador y accede a la IP pública de tu instancia:
+```
+http://<IP_PUBLICA_DE_TU_EC2>
+```
+
+---
+
+## 6. Actualizar el frontend
+
+Para actualizar el frontend con cambios recientes:
+
+```bash
+git pull origin main
+sudo docker compose down
+sudo docker compose up -d --build
+```
+
+---
